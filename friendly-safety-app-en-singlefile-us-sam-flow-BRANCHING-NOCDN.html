@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Friendly Safety App • Sam (Offline, No-CDN)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg1:#eef2ff; --bg2:#e0f2fe; --text:#111827; --border:#e5e7eb; --muted:#6b7280; --brand:#2563eb;
+    }
+    html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--text);background:linear-gradient(120deg,var(--bg1),var(--bg2));}
+    .container{max-width:860px;margin:0 auto;padding:24px 20px 40px;}
+    h1{font-size:28px;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+    .sub{color:var(--muted);font-size:13px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:16px;margin:14px 0}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:1px solid var(--border);background:#fff;border-radius:14px;padding:8px 12px;font-weight:600;cursor:pointer}
+    .btn:hover{background:#f8fafc}
+    .btn.primary{background:var(--brand);color:#fff;border-color:transparent}
+    .btn.primary:hover{filter:brightness(.95)}
+    .btn[disabled]{opacity:.5;cursor:not-allowed}
+    .input, .textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px}
+    .textarea{min-height:80px;resize:vertical}
+    .quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .chip{border:1px solid var(--border);border-radius:14px;padding:6px 10px;font-size:13px;background:#fff;cursor:pointer}
+    .chip:hover{background:#f3f4f6}
+    .avatar{width:56px;height:56px;flex:none}
+    .bubble{border:1px solid var(--border);border-radius:16px;background:#ffffffd0;padding:10px 12px;font-size:14px}
+    .flex{display:flex;gap:12px;align-items:flex-start}
+    .small{font-size:12px;color:var(--muted)}
+    .list{padding-left:18px}
+    .hidden{display:none}
+    .tag-on{background:var(--brand);color:#fff;border-color:transparent}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="row" style="justify-content:space-between;align-items:center">
+      <div>
+        <h1>You’re not alone.</h1>
+        <div class="sub">Private & local. Nothing is saved.</div>
+      </div>
+      <button id="voiceToggle" class="btn" aria-pressed="false">🔇 Voice off</button>
+    </header>
+
+    <div id="screen-intro" class="card">
+      <div class="flex">
+        <div class="avatar" aria-hidden="true">
+          <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 22 Q32 6 48 22 Q46 14 40 12 Q32 9 24 12 Q18 14 16 22 Z" fill="#1f2937"/>
+            <circle cx="32" cy="32" r="14" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+            <circle cx="27" cy="30" r="2" fill="#111827"/>
+            <circle cx="37" cy="30" r="2" fill="#111827"/>
+            <path d="M26 36 Q32 40 38 36" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <rect x="18" y="42" width="28" height="12" rx="6" fill="#60a5fa"/>
+          </svg>
+        </div>
+        <div class="bubble">
+          Hi, I’m <b>Sam</b>. I’m here to listen like a friend. We can go slow. Nothing you type is saved.
+          <div class="small">(You can mute voice and keep reading.)</div>
+        </div>
+      </div>
+      <h3>How are you today?</h3>
+      <input id="how" class="input" placeholder="e.g., okay / nervous / tired / happy…" aria-label="How are you?">
+      <div id="howChips" class="quick"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="introNext">Next</button>
+      </div>
+    </div>
+
+    <div id="screen-basics" class="hidden">
+      <div class="card">
+        <h3>How old are you?</h3>
+        <input id="age" class="input" inputmode="numeric" placeholder="Enter your age (number)">
+        <div id="ageChips" class="quick"></div>
+      </div>
+      <div class="card">
+        <h3>Is there anything you want to tell me?</h3>
+        <textarea id="share" class="textarea" placeholder="You can write as much or as little as you want."></textarea>
+        <div id="shareChips" class="quick"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="basicsBack">Back</button>
+          <button class="btn primary" id="basicsNext">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-adaptive" class="hidden">
+      <div class="card">
+        <div class="flex">
+          <div class="avatar" aria-hidden="true">
+            <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 22 Q32 6 48 22 Q46 14 40 12 Q32 9 24 12 Q18 14 16 22 Z" fill="#1f2937"/>
+              <circle cx="32" cy="32" r="14" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+              <circle cx="27" cy="30" r="2" fill="#111827"/>
+              <circle cx="37" cy="30" r="2" fill="#111827"/>
+              <path d="M26 36 Q32 40 38 36" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <rect x="18" y="42" width="28" height="12" rx="6" fill="#60a5fa"/>
+            </svg>
+          </div>
+          <div class="bubble">Thanks for sharing. I’ll ask simple questions and adjust based on your answers.</div>
+        </div>
+        <div id="qWrap"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="adaptiveBack">Back</button>
+          <button class="btn primary" id="adaptiveNext">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-support" class="hidden">
+      <div class="card">
+        <div class="flex">
+          <div class="avatar" aria-hidden="true">
+            <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 22 Q32 6 48 22 Q46 14 40 12 Q32 9 24 12 Q18 14 16 22 Z" fill="#1f2937"/>
+              <circle cx="32" cy="32" r="14" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+              <circle cx="27" cy="30" r="2" fill="#111827"/>
+              <circle cx="37" cy="30" r="2" fill="#111827"/>
+              <path d="M26 36 Q32 40 38 36" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <rect x="18" y="42" width="28" height="12" rx="6" fill="#60a5fa"/>
+            </svg>
+          </div>
+          <div class="bubble">
+            Thanks for checking in. There’s nothing wrong with you. If something feels wrong, it’s not your fault.
+            This can happen to anyone, and you deserve help and safety.
+          </div>
+        </div>
+        <h3>Would you like help thinking of someone to talk to today?</h3>
+        <ul class="list">
+          <li>A friend you trust (someone kind who listens)</li>
+          <li>A grown-up you trust: teacher, school counselor, coach</li>
+          <li>Family you can tell: mom, dad, older sister/brother, cousin, aunt, or uncle</li>
+        </ul>
+        <p class="small">You can tell them just a little to start. For example: “Something is bothering me and I need help.”</p>
+        <div id="safetyFlag" class="card hidden" style="background:#fffbeb;border-color:#fcd34d">
+          <b>Safety check</b><br>
+          <span class="small">If you feel in danger right now, please call <b>911</b> or go to a safe adult nearby.</span>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="supportBack">Back</button>
+          <button class="btn primary" id="supportNext">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-helplines" class="hidden">
+      <div class="card">
+        <h3>Extra help (United States)</h3>
+        <div class="small">If you want to talk to a helper, these services are here for you:</div>
+        <div id="helplines" style="margin-top:8px"></div>
+        <p id="dangerNote" class="small" style="margin-top:8px"></p>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="restartBtn">Start over</button>
+        </div>
+      </div>
+      <div class="small">This guide doesn’t replace emergency services. If you or someone else is in immediate danger, call 911.</div>
+    </div>
+
+    <div id="ariaLive" class="hidden" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script>
+    // -------- Data --------
+    const HELPLINES_US = [
+      { name:"Childhelp National Child Abuse Hotline (24/7)", phone:"1-800-422-4453", text:"Call or text 1-800-422-4453, or live chat at childhelphotline.org" },
+      { name:"National Bullying Prevention Center (PACER)", phone:"pacer.org/bullying", text:"Info & help for kids, parents, schools" },
+      { name:"988 Suicide & Crisis Lifeline (24/7)", phone:"988", text:"Call or text 988, or chat at 988lifeline.org" },
+      { name:"911 (Emergency)", phone:"911", text:"For immediate danger" },
+    ];
+    const SCREENERS = [
+      { id:"secret", type:"yn", text:"Has anyone asked you to keep a secret that made you feel uneasy?" },
+      { id:"touching", type:"yn", text:"Has anyone touched you in a way you didn’t like?" },
+      { id:"privatePhotos", type:"yn", text:"Has anyone asked for private photos or messages?" },
+      { id:"unsafe", type:"yn", text:"Have you felt unsafe around someone or in a situation?" },
+      { id:"mobbing", type:"yn", text:"Has anyone been bothering you over and over (mobbing/bullying)?" },
+      { id:"threats", type:"yn", text:"Has anyone threatened you or tried to scare you into doing something?" },
+      { id:"isolation", type:"yn", text:"Do you feel someone is trying to keep you away from your friends or activities?" },
+    ];
+    const FOLLOWUPS = {
+      secret:[
+        { id:"secret_who", type:"choice", text:"Who is asking for the secret?", options:["Someone at school","Someone online","Someone at home","Other / not sure"] },
+        { id:"secret_repeat", type:"yn", text:"Has this happened more than once?" },
+      ],
+      touching:[
+        { id:"touching_place", type:"choice", text:"Where did this happen?", options:["School","Home","Online","Somewhere else"] },
+        { id:"touching_now", type:"yn", text:"Do you feel safe right now?" },
+      ],
+      privatePhotos:[
+        { id:"pp_where", type:"choice", text:"Where did they ask?", options:["Text / DM","Social app","At school","Other"] },
+        { id:"pp_pressure", type:"yn", text:"Did they try to pressure or bribe you?" },
+      ],
+      unsafe:[
+        { id:"unsafe_who", type:"choice", text:"Is it a person or place making you feel unsafe?", options:["A person","A place","Both / not sure"] },
+        { id:"unsafe_now", type:"yn", text:"Is the unsafe person or place near you right now?" },
+      ],
+      mobbing:[
+        { id:"mobbing_kind", type:"multi", text:"What kind of bullying is it?", options:["Teasing/name-calling","Excluding/ignoring","Spreading rumors","Online messages","Physical"] },
+        { id:"mobbing_where", type:"choice", text:"Where does it happen most?", options:["In class","Hallway/bus","Online","Sports/activity","Other"] },
+        { id:"mobbing_adult", type:"yn", text:"Is there a grown-up nearby who could help at those times?" },
+      ],
+      threats:[
+        { id:"threats_kind", type:"choice", text:"What kind of threats?", options:["Hurt me","Tell secrets","Take/ruin my stuff","Other"] },
+        { id:"threats_repeat", type:"yn", text:"Has this happened more than once?" },
+      ],
+      isolation:[
+        { id:"isolation_how", type:"choice", text:"How are they keeping you away?", options:["Telling others to avoid me","Blocking/invites online","Taking my phone/limits","Other"] },
+        { id:"isolation_support", type:"yn", text:"Is there a friend you still feel safe with?" },
+      ],
+    };
+
+    // -------- State --------
+    const state = {
+      tts:false,
+      how:"",
+      ageText:"",
+      share:"",
+      answers:{}, // qid -> value
+      queue: SCREENERS.map(q=>q.id),
+      currentId: SCREENERS[0]?.id || null,
+    };
+
+    // -------- Elements --------
+    const qs = s => document.querySelector(s);
+    const intro = qs("#screen-intro");
+    const basics = qs("#screen-basics");
+    const adaptive = qs("#screen-adaptive");
+    const support = qs("#screen-support");
+    const helplines = qs("#screen-helplines");
+    const qWrap = qs("#qWrap");
+    const voiceToggle = qs("#voiceToggle");
+    const safetyFlag = qs("#safetyFlag");
+    const dangerNote = qs("#dangerNote");
+
+    // -------- TTS --------
+    const ariaLive = qs("#ariaLive");
+    function announce(text){
+      ariaLive.textContent = "";
+      setTimeout(()=>ariaLive.textContent = text || "", 10);
+    }
+    function speak(text){
+      announce(text);
+      if(!state.tts || !("speechSynthesis" in window)) return;
+      try{
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US"; u.rate = 1; u.pitch = 1;
+        speechSynthesis.speak(u);
+      }catch{}
+    }
+
+    // -------- Helpers --------
+    function show(el){ el.classList.remove("hidden"); }
+    function hide(el){ el.classList.add("hidden"); }
+    function setScreen(name){
+      [intro,basics,adaptive,support,helplines].forEach(hide);
+      if(name==="intro") show(intro);
+      if(name==="basics") show(basics);
+      if(name==="adaptive") show(adaptive);
+      if(name==="support") show(support);
+      if(name==="helplines") show(helplines);
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+    function getQuestionById(id){
+      const screener = SCREENERS.find(q=>q.id===id);
+      if(screener) return screener;
+      for(const root in FOLLOWUPS){
+        const f = FOLLOWUPS[root].find(x=>x.id===id);
+        if(f) return f;
+      }
+      return null;
+    }
+    function anyRedFlag(){
+      return SCREENERS.some(q => state.answers[q.id] === true);
+    }
+    function pushFollowupsFor(rootId){
+      const fups = FOLLOWUPS[rootId] || [];
+      if(!fups.length) return;
+      const idx = state.queue.indexOf(state.currentId);
+      const before = state.queue.slice(0, idx+1);
+      const after = state.queue.slice(idx+1);
+      const toInsert = fups.map(f=>f.id);
+      state.queue = [...before, ...toInsert, ...after].filter((v,i,a)=>a.indexOf(v)===i);
+    }
+    function goNext(){
+      const idx = state.queue.indexOf(state.currentId);
+      state.currentId = state.queue[idx+1] || null;
+      renderQuestion();
+    }
+    function onAnswer(qid, value){
+      state.answers[qid] = value;
+      if(SCREENERS.some(q=>q.id===qid) && value===true){
+        pushFollowupsFor(qid);
+      }
+      goNext();
+    }
+    function onSkip(qid){
+      state.answers[qid] = null;
+      goNext();
+    }
+
+    // -------- Renderers --------
+    function renderChips(container, options, onClick){
+      container.innerHTML = "";
+      options.forEach(txt=>{
+        const b = document.createElement("button");
+        b.className="chip";
+        b.textContent = txt;
+        b.onclick = ()=> onClick(txt);
+        container.appendChild(b);
+      });
+    }
+
+    function renderQuestion(){
+      qWrap.innerHTML = "";
+      const id = state.currentId;
+      if(!id){
+        qWrap.innerHTML = "<div class='small'>That’s all the questions for now.</div>";
+        qs("#adaptiveNext").disabled = false;
+        return;
+      }
+      const q = getQuestionById(id);
+      const title = document.createElement("div");
+      title.className = "small";
+      title.style.fontSize = "15px";
+      title.style.marginBottom = "8px";
+      title.textContent = q.text;
+      qWrap.appendChild(title);
+      speak(q.text);
+
+      if(q.type==="yn"){
+        const row = document.createElement("div");
+        row.className="row";
+        ["Yes","No","Skip"].forEach(lbl=>{
+          const b = document.createElement("button");
+          b.className="btn";
+          b.textContent = lbl;
+          b.onclick = ()=>{
+            if(lbl==="Yes") onAnswer(q.id,true);
+            else if(lbl==="No") onAnswer(q.id,false);
+            else onSkip(q.id);
+          };
+          row.appendChild(b);
+        });
+        qWrap.appendChild(row);
+      }
+      if(q.type==="choice"){
+        const row = document.createElement("div");
+        row.className="row";
+        q.options.forEach(opt=>{
+          const b = document.createElement("button");
+          b.className="btn";
+          b.textContent = opt;
+          b.onclick = ()=> onAnswer(q.id,opt);
+          row.appendChild(b);
+        });
+        const sk = document.createElement("button");
+        sk.className="btn";
+        sk.textContent="Skip";
+        sk.onclick = ()=> onSkip(q.id);
+        row.appendChild(sk);
+        qWrap.appendChild(row);
+      }
+      if(q.type==="multi"){
+        const row = document.createElement("div");
+        row.className="row";
+        const picked = new Set();
+        q.options.forEach(opt=>{
+          const b = document.createElement("button");
+          b.className="btn";
+          b.textContent = opt;
+          b.onclick = ()=>{
+            if(picked.has(opt)){ picked.delete(opt); b.classList.remove("tag-on"); }
+            else { picked.add(opt); b.classList.add("tag-on"); }
+          };
+          row.appendChild(b);
+        });
+        const controls = document.createElement("div");
+        controls.className="row";
+        const done = document.createElement("button");
+        done.className="btn primary";
+        done.textContent="Done";
+        done.onclick = ()=> onAnswer(q.id, Array.from(picked));
+        const sk = document.createElement("button");
+        sk.className="btn";
+        sk.textContent="Skip";
+        sk.onclick = ()=> onSkip(q.id);
+        controls.appendChild(done);
+        controls.appendChild(sk);
+        qWrap.appendChild(row);
+        qWrap.appendChild(controls);
+      }
+      qs("#adaptiveNext").disabled = true;
+    }
+
+    function renderHelplines(){
+      const wrap = qs("#helplines");
+      wrap.innerHTML = "";
+      HELPLINES_US.forEach(h=>{
+        const div = document.createElement("div");
+        div.className="card";
+        div.innerHTML = "<b>"+h.name+"</b><br>"+h.phone+(h.text?("<div class='small'>"+h.text+"</div>"):"");
+        wrap.appendChild(div);
+      });
+      dangerNote.textContent = anyRedFlag()
+        ? "If you feel in danger right now, please call 911."
+        : "Even if you’re unsure, you can still talk to a helper to feel better.";
+    }
+
+    // -------- Wire up --------
+    // Intro chips
+    renderChips(qs("#howChips"),
+      ["Okay","Sad","Scared","Angry","Confused","Tired","Happy","Stressed"],
+      v => (qs("#how").value = state.how = v));
+    // Age chips
+    renderChips(qs("#ageChips"),
+      ["8","9","10","11","12","13","14","15","16","17"],
+      v => (qs("#age").value = state.ageText = v));
+    // Share chips
+    renderChips(qs("#shareChips"),
+      ["I'm being left out","Someone keeps messaging me","I had a scary moment","A secret is bothering me","I just feel sad","Not sure, I need to talk"],
+      v => (qs("#share").value = state.share = v));
+
+    // Inputs
+    qs("#how").addEventListener("input", e=> state.how = e.target.value);
+    qs("#age").addEventListener("input", e=> state.ageText = e.target.value);
+    qs("#share").addEventListener("input", e=> state.share = e.target.value);
+
+    // Buttons
+    qs("#introNext").onclick = ()=> setScreen("basics");
+    qs("#basicsBack").onclick = ()=> setScreen("intro");
+    qs("#basicsNext").onclick = ()=> { setScreen("adaptive"); renderQuestion(); };
+    qs("#adaptiveBack").onclick = ()=> setScreen("basics");
+    qs("#adaptiveNext").onclick = ()=> setScreen("support");
+    qs("#supportBack").onclick = ()=> setScreen("adaptive");
+    qs("#supportNext").onclick = ()=> {
+      if(anyRedFlag()) { safetyFlag.classList.remove("hidden"); }
+      else { safetyFlag.classList.add("hidden"); }
+      setScreen("helplines");
+      renderHelplines();
+    };
+    qs("#restartBtn").onclick = ()=> location.reload();
+
+    // Voice toggle
+    voiceToggle.onclick = ()=>{
+      state.tts = !state.tts;
+      voiceToggle.textContent = state.tts ? "🔊 Voice on" : "🔇 Voice off";
+      voiceToggle.setAttribute("aria-pressed", String(state.tts));
+    };
+
+    // Start on intro
+    setScreen("intro");
+  </script>
+</body>
+</html>
